@@ -4,6 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="IY SECURITY — Malware Analysis, Threat Research, VAPT, Threat Hunting and Cybersecurity Training." />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#020607" />
+  <link rel="canonical" href="https://iysecurity.com/" />
+
+  <!-- Social sharing metadata -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://iysecurity.com/" />
+  <meta property="og:title" content="IY SECURITY | We Hunt What Hides." />
+  <meta property="og:description" content="Cybersecurity research, malware analysis, threat hunting, VAPT and practical security training." />
+  <meta property="og:site_name" content="IY SECURITY" />
+
   <title>IY SECURITY | We Hunt What Hides.</title>
 
   <!-- Tailwind CSS -->
@@ -135,16 +146,16 @@
     <!-- Live ticker -->
     <div class="overflow-hidden border-t border-emerald-400/10 bg-black/40 py-2">
       <div class="marquee mono text-[11px] text-emerald-300/80">
-        <span class="mx-8">● LIVE THREAT FEED</span>
-        <span class="mx-8 text-slate-500">CVE-2026-XXXX monitored</span>
-        <span class="mx-8">● RANSOMWARE ACTIVITY ELEVATED</span>
-        <span class="mx-8 text-cyan-300">IOC PIPELINE: ONLINE</span>
-        <span class="mx-8">● SANDBOX NODES: 12/12</span>
-        <span class="mx-8 text-slate-500">THREAT INTEL UPDATED 00:02 UTC</span>
-        <span class="mx-8">● LIVE THREAT FEED</span>
-        <span class="mx-8 text-slate-500">CVE-2026-XXXX monitored</span>
-        <span class="mx-8">● RANSOMWARE ACTIVITY ELEVATED</span>
-        <span class="mx-8 text-cyan-300">IOC PIPELINE: ONLINE</span>
+        <span class="mx-8">● IY SECURITY RESEARCH</span>
+        <span class="mx-8 text-slate-500">MALWARE ANALYSIS • THREAT HUNTING</span>
+        <span class="mx-8">● STATIC + DYNAMIC ANALYSIS</span>
+        <span class="mx-8 text-cyan-300">MITRE ATT&CK • YARA • SIGMA</span>
+        <span class="mx-8">● RESEARCH LIBRARY ONLINE</span>
+        <span class="mx-8 text-slate-500">DEFENSIVE SECURITY RESEARCH</span>
+        <span class="mx-8">● IY SECURITY RESEARCH</span>
+        <span class="mx-8 text-slate-500">MALWARE ANALYSIS • THREAT HUNTING</span>
+        <span class="mx-8">● STATIC + DYNAMIC ANALYSIS</span>
+        <span class="mx-8 text-cyan-300">MITRE ATT&CK • YARA • SIGMA</span>
       </div>
     </div>
   </header>
@@ -338,10 +349,22 @@ STATUS: <span class="text-cyan-300">INVESTIGATION ACTIVE</span>
 
           <div class="glass overflow-hidden rounded-2xl lg:col-span-2" data-aos="fade-up">
             <div class="flex items-center justify-between border-b border-white/5 px-5 py-4">
-              <div><span class="mono text-xs text-emerald-400">SANDBOX NODE / WIN-X64-07</span><h3 class="mt-1 mono text-sm font-bold text-white">Dynamic Analysis Console</h3></div>
-              <span class="rounded-full border border-emerald-400/20 px-3 py-1 mono text-[10px] text-emerald-300">● RUNNING</span>
+              <div><span class="mono text-xs text-emerald-400">IY SECURITY / RESEARCH PIPELINE</span><h3 class="mt-1 mono text-sm font-bold text-white">Dynamic Analysis Console</h3></div>
+              <span class="rounded-full border border-emerald-400/20 px-3 py-1 mono text-[10px] text-emerald-300">● RESEARCH MODE</span>
             </div>
             <div id="terminal" class="min-h-[290px] bg-black/60 p-5 mono text-xs leading-6 text-emerald-300"></div>
+          </div>
+
+          <!-- Automatically populated from research/index.json -->
+          <div class="lg:col-span-2" data-aos="fade-up">
+            <div class="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <span class="mono text-xs text-cyan-300">PUBLISHED ANALYSIS</span>
+                <h3 class="mt-1 mono text-2xl font-bold text-white">Latest Research</h3>
+              </div>
+              <span id="researchStatus" class="mono text-[10px] text-slate-600">LOADING...</span>
+            </div>
+            <div id="researchGrid" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3"></div>
           </div>
         </div>
       </div>
@@ -437,7 +460,7 @@ STATUS: <span class="text-cyan-300">INVESTIGATION ACTIVE</span>
           <label class="mt-4 block"><span class="mono text-xs text-slate-500">SERVICE</span><select name="service" class="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-emerald-400/50"><option>VAPT</option><option>Threat Hunting</option><option>Malware Analysis</option><option>Training</option><option>Other</option></select></label>
           <label class="mt-4 block"><span class="mono text-xs text-slate-500">MESSAGE</span><textarea required name="message" rows="5" class="mt-2 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-emerald-400/50" placeholder="Tell us about your requirement..."></textarea></label>
           <button class="mt-5 w-full rounded-lg bg-emerald-400 px-5 py-3.5 mono text-sm font-bold text-black transition hover:scale-[1.01]">Transmit Request →</button>
-          <p id="formStatus" class="mt-3 hidden text-center mono text-xs text-emerald-300">Request prepared. Connect this form to your email/backend to receive submissions.</p>
+          <p id="formStatus" class="mt-3 hidden text-center mono text-xs text-emerald-300"></p>
         </form>
       </div>
     </section>
@@ -570,6 +593,72 @@ STATUS: <span class="text-cyan-300">INVESTIGATION ACTIVE</span>
     }
     typeLine();
 
+    // Dynamic research library
+    async function loadResearch() {
+      const grid = document.getElementById('researchGrid');
+      const status = document.getElementById('researchStatus');
+      const count = document.getElementById('researchCount');
+      if (!grid) return;
+
+      try {
+        const response = await fetch('./research/index.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Research index unavailable');
+        const reports = await response.json();
+
+        reports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        count.textContent = reports.length;
+        status.textContent = reports.length ? `${reports.length} REPORT${reports.length === 1 ? '' : 'S'} PUBLISHED` : 'NO REPORTS YET';
+
+        if (!reports.length) {
+          grid.innerHTML = `<div class="glass rounded-xl p-6 md:col-span-2 lg:col-span-3">
+            <p class="mono text-sm text-slate-400">Research reports will appear here when published.</p>
+          </div>`;
+          return;
+        }
+
+        grid.innerHTML = reports.map(report => {
+          const category = report.category || 'Research';
+          const type = report.type || 'Analysis';
+          const tags = Array.isArray(report.tags) ? report.tags.slice(0, 4) : [];
+          const tagsHtml = tags.map(t => `<span class="rounded border border-white/10 px-2 py-1">${escapeHtml(t)}</span>`).join('');
+          return `<article class="glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-cyan-300/30">
+            <div class="flex items-center justify-between gap-3">
+              <span class="mono text-[10px] text-purple-300">[${escapeHtml(category.toUpperCase())}]</span>
+              <span class="mono text-[10px] text-cyan-300">${escapeHtml(type.toUpperCase())}</span>
+            </div>
+            <h3 class="mt-5 text-lg font-bold text-white">${escapeHtml(report.title || 'Untitled Research')}</h3>
+            <p class="mt-3 text-sm leading-6 text-slate-400">${escapeHtml(report.description || 'IY SECURITY research report.')}</p>
+            <div class="mt-5 flex flex-wrap gap-2 mono text-[9px] text-slate-500">${tagsHtml}</div>
+            <div class="mt-6 flex items-center justify-between gap-4">
+              <span class="mono text-[10px] text-slate-600">${escapeHtml(formatDate(report.date))}</span>
+              <a href="./research/${encodeURI(report.path || '')}" class="mono text-xs font-bold text-emerald-300 hover:text-white">READ ANALYSIS →</a>
+            </div>
+          </article>`;
+        }).join('');
+      } catch (error) {
+        status.textContent = 'RESEARCH INDEX OFFLINE';
+        grid.innerHTML = `<div class="glass rounded-xl p-6 md:col-span-2 lg:col-span-3">
+          <p class="mono text-sm text-slate-400">Research library is temporarily unavailable.</p>
+        </div>`;
+        console.error(error);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+      }[char]));
+    }
+
+    function formatDate(value) {
+      if (!value) return 'DATE NOT SET';
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+    }
+
+    loadResearch();
+
     // Blog category filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -587,11 +676,37 @@ STATUS: <span class="text-cyan-300">INVESTIGATION ACTIVE</span>
       button.addEventListener('click', () => button.parentElement.classList.toggle('open'));
     });
 
-    // Contact form demo
-    document.getElementById('contactForm').addEventListener('submit', e => {
+    // Contact form
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+    const FORM_ENDPOINT = ''; // Add your Formspree endpoint here, e.g. https://formspree.io/f/xxxxxxx
+
+    contactForm.addEventListener('submit', async e => {
       e.preventDefault();
-      document.getElementById('formStatus').classList.remove('hidden');
-      e.target.reset();
+
+      if (!FORM_ENDPOINT) {
+        formStatus.textContent = 'Contact form is not connected yet. Please email hello@iysecurity.com.';
+        formStatus.classList.remove('hidden');
+        return;
+      }
+
+      formStatus.textContent = 'Transmitting request...';
+      formStatus.classList.remove('hidden');
+
+      try {
+        const response = await fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          body: new FormData(contactForm),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Submission failed');
+        formStatus.textContent = 'Request transmitted successfully. We will get back to you.';
+        contactForm.reset();
+      } catch (error) {
+        formStatus.textContent = 'Unable to transmit the request. Please email hello@iysecurity.com.';
+        console.error(error);
+      }
     });
   </script>
 </body>
