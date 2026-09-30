@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IY SECURITY — Malware Analysis, Threat Research, VAPT, Threat Hunting and Cybersecurity Training." />
+  <title>IY SECURITY | We Hunt What Hides.</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- AOS -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              950: '#020607',
+              900: '#050b0d',
+              800: '#081215',
+              700: '#0d1b1e',
+              green: '#39ff88',
+              cyan: '#22d3ee',
+              purple: '#a78bfa'
+            }
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['Inter', 'sans-serif']
+          },
+          boxShadow: {
+            neon: '0 0 25px rgba(57,255,136,.15)',
+            cyan: '0 0 25px rgba(34,211,238,.14)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background:#020607; color:#d9e7e9; font-family:Inter,sans-serif; overflow-x:hidden; }
+    .mono { font-family:"JetBrains Mono",monospace; }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(57,255,136,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(57,255,136,.035) 1px, transparent 1px);
+      background-size: 45px 45px;
+    }
+    .glass {
+      background:rgba(7,18,21,.72);
+      border:1px solid rgba(57,255,136,.12);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+    .glow-text { text-shadow:0 0 25px rgba(57,255,136,.35); }
+    .cyan-text { text-shadow:0 0 20px rgba(34,211,238,.3); }
+    .service-card { perspective:1200px; height:370px; }
+    .service-inner {
+      position:relative; width:100%; height:100%;
+      transition:transform .7s cubic-bezier(.2,.8,.2,1);
+      transform-style:preserve-3d;
+    }
+    .service-card:hover .service-inner { transform:rotateY(180deg); }
+    .service-front,.service-back {
+      position:absolute; inset:0; backface-visibility:hidden;
+      border-radius:1rem; padding:1.5rem;
+    }
+    .service-back { transform:rotateY(180deg); }
+    .scanline {
+      position:absolute; inset:0; pointer-events:none; opacity:.04;
+      background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,#fff 4px);
+      animation:scan 9s linear infinite;
+    }
+    @keyframes scan { from{transform:translateY(-30%)} to{transform:translateY(30%)} }
+    .pulse-dot { animation:pulseDot 1.8s infinite; }
+    @keyframes pulseDot { 50%{box-shadow:0 0 0 7px rgba(57,255,136,.04),0 0 20px rgba(57,255,136,.65)} }
+    .terminal-cursor { animation:blink 1s steps(1) infinite; }
+    @keyframes blink { 50%{opacity:0} }
+    .marquee { animation:marquee 30s linear infinite; white-space:nowrap; }
+    @keyframes marquee { to{transform:translateX(-50%)} }
+    .filter-btn.active { color:#020607; background:#39ff88; border-color:#39ff88; }
+    .accordion-content { max-height:0; overflow:hidden; transition:max-height .35s ease; }
+    .accordion.open .accordion-content { max-height:500px; }
+    .accordion.open .chevron { transform:rotate(180deg); }
+    .hero-orb { animation:float 7s ease-in-out infinite; }
+    @keyframes float { 50%{transform:translate(20px,-18px) scale(1.04)} }
+    ::selection { background:#39ff88; color:#020607; }
+    ::-webkit-scrollbar { width:8px; }
+    ::-webkit-scrollbar-track { background:#020607; }
+    ::-webkit-scrollbar-thumb { background:#163d2a; border-radius:8px; }
+  </style>
+</head>
+
+<body>
+  <!-- Matrix canvas -->
+  <canvas id="matrixCanvas" class="fixed inset-0 z-0 opacity-25 pointer-events-none"></canvas>
+
+  <!-- NAVBAR -->
+  <header class="fixed top-0 z-50 w-full border-b border-emerald-400/10 bg-[#020607]/85 backdrop-blur-xl">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+      <a href="#home" class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-lg border border-emerald-400/40 bg-emerald-400/5 text-emerald-300 shadow-neon mono font-bold">IY</span>
+        <span class="mono text-lg font-bold tracking-widest text-white">IY<span class="text-emerald-400">SECURITY</span></span>
+      </a>
+
+      <div id="navLinks" class="hidden items-center gap-7 md:flex">
+        <a href="#home" class="text-sm text-slate-300 transition hover:text-emerald-300">Home</a>
+        <a href="#services" class="text-sm text-slate-300 transition hover:text-emerald-300">Services</a>
+        <a href="#research" class="text-sm text-slate-300 transition hover:text-emerald-300">Research</a>
+        <a href="#blogs" class="text-sm text-slate-300 transition hover:text-emerald-300">Blogs</a>
+        <a href="#training" class="text-sm text-slate-300 transition hover:text-emerald-300">Training</a>
+        <a href="#contact" class="rounded-lg border border-emerald-400/30 px-4 py-2 text-sm text-emerald-300 transition hover:bg-emerald-400 hover:text-black">Contact</a>
+      </div>
+
+      <button id="menuBtn" class="rounded-lg border border-emerald-400/20 px-3 py-2 text-emerald-300 md:hidden">☰</button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden border-t border-emerald-400/10 bg-[#020607]/95 px-5 py-4 md:hidden">
+      <div class="flex flex-col gap-4">
+        <a href="#home">Home</a><a href="#services">Services</a><a href="#research">Research</a>
+        <a href="#blogs">Blogs</a><a href="#training">Training</a><a href="#contact">Contact</a>
+      </div>
+    </div>
+
+    <!-- Live ticker -->
+    <div class="overflow-hidden border-t border-emerald-400/10 bg-black/40 py-2">
+      <div class="marquee mono text-[11px] text-emerald-300/80">
+        <span class="mx-8">● LIVE THREAT FEED</span>
+        <span class="mx-8 text-slate-500">CVE-2026-XXXX monitored</span>
+        <span class="mx-8">● RANSOMWARE ACTIVITY ELEVATED</span>
+        <span class="mx-8 text-cyan-300">IOC PIPELINE: ONLINE</span>
+        <span class="mx-8">● SANDBOX NODES: 12/12</span>
+        <span class="mx-8 text-slate-500">THREAT INTEL UPDATED 00:02 UTC</span>
+        <span class="mx-8">● LIVE THREAT FEED</span>
+        <span class="mx-8 text-slate-500">CVE-2026-XXXX monitored</span>
+        <span class="mx-8">● RANSOMWARE ACTIVITY ELEVATED</span>
+        <span class="mx-8 text-cyan-300">IOC PIPELINE: ONLINE</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10">
+    <!-- HERO -->
+    <section id="home" class="relative flex min-h-screen items-center overflow-hidden px-5 pt-36 lg:px-8">
+      <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.2fr_.8fr]">
+        <div data-aos="fade-up">
+          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/5 px-4 py-2 mono text-xs text-emerald-300">
+            <span class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></span>
+            ADVERSARY RESEARCH • DEFENSE ENGINEERING
+          </div>
+          <h1 class="mono max-w-4xl text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-8xl">
+            We Hunt<br><span class="text-emerald-400 glow-text">What Hides.</span>
+          </h1>
+          <p class="mt-7 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
+            IY SECURITY is a cybersecurity research and defense company focused on
+            <span class="text-slate-200">malware analysis, threat research, VAPT, threat hunting and hands-on security training.</span>
+            We turn adversary behavior into actionable defense.
+          </p>
+          <div class="mt-9 flex flex-wrap gap-4">
+            <a href="#services" class="rounded-xl bg-emerald-400 px-6 py-3.5 mono text-sm font-bold text-black shadow-[0_0_35px_rgba(57,255,136,.18)] transition hover:scale-105">Explore Services →</a>
+            <a href="#research" class="rounded-xl border border-cyan-300/30 bg-cyan-300/5 px-6 py-3.5 mono text-sm font-bold text-cyan-300 transition hover:border-cyan-300/70 hover:bg-cyan-300/10">View Research ↗</a>
+          </div>
+          <div class="mt-10 flex flex-wrap gap-6 mono text-xs text-slate-500">
+            <span>MITRE ATT&CK</span><span>•</span><span>YARA</span><span>•</span><span>SIGMA</span><span>•</span><span>DFIR</span><span>•</span><span>OSINT</span>
+          </div>
+        </div>
+
+        <div class="relative hidden lg:block" data-aos="fade-left" data-aos-delay="150">
+          <div class="hero-orb absolute -right-20 -top-20 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl"></div>
+          <div class="glass relative overflow-hidden rounded-2xl p-5 shadow-neon">
+            <div class="scanline"></div>
+            <div class="mb-4 flex items-center justify-between border-b border-white/5 pb-3">
+              <div class="flex gap-1.5"><i class="h-2.5 w-2.5 rounded-full bg-red-400/70"></i><i class="h-2.5 w-2.5 rounded-full bg-yellow-400/70"></i><i class="h-2.5 w-2.5 rounded-full bg-emerald-400/70"></i></div>
+              <span class="mono text-[10px] text-slate-600">iysec@lab:~/hunt</span>
+            </div>
+            <pre class="mono min-h-[350px] whitespace-pre-wrap text-xs leading-6 text-emerald-300/90">$ ./hunt --mode hypothesis
+[+] Loading threat intel...
+[+] Correlating 18,492 events
+[+] ATT&CK mapping enabled
+
+HYPOTHESIS #042
+────────────────────────────
+Initial Access : T1566
+Execution      : T1059
+Persistence    : T1053
+Defense Evasion: T1070
+
+[!] anomalous process tree detected
+[!] suspicious PowerShell chain
+[+] 7 IOCs extracted
+[+] 4 hosts correlated
+
+STATUS: <span class="text-cyan-300">INVESTIGATION ACTIVE</span>
+
+<span class="text-slate-600">_</span><span class="terminal-cursor">█</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="border-y border-emerald-400/10 bg-black/20 px-5 py-12 lg:px-8">
+      <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="glass rounded-xl p-6 text-center" data-aos="fade-up">
+          <div class="counter mono text-3xl font-bold text-emerald-400" data-target="18492">0</div>
+          <p class="mt-2 text-xs uppercase tracking-widest text-slate-500">Threats Analyzed</p>
+        </div>
+        <div class="glass rounded-xl p-6 text-center" data-aos="fade-up" data-aos-delay="80">
+          <div class="counter mono text-3xl font-bold text-cyan-300" data-target="6731">0</div>
+          <p class="mt-2 text-xs uppercase tracking-widest text-slate-500">Malware Samples Reversed</p>
+        </div>
+        <div class="glass rounded-xl p-6 text-center" data-aos="fade-up" data-aos-delay="160">
+          <div class="counter mono text-3xl font-bold text-purple-300" data-target="248">0</div>
+          <p class="mt-2 text-xs uppercase tracking-widest text-slate-500">CVEs Found</p>
+        </div>
+        <div class="glass rounded-xl p-6 text-center" data-aos="fade-up" data-aos-delay="240">
+          <div class="counter mono text-3xl font-bold text-emerald-300" data-target="96">0</div>
+          <p class="mt-2 text-xs uppercase tracking-widest text-slate-500">Clients Protected</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="grid-bg px-5 py-24 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-14 max-w-3xl" data-aos="fade-up">
+          <p class="mono text-xs uppercase tracking-[.25em] text-emerald-400">01 / Services</p>
+          <h2 class="mt-3 mono text-4xl font-bold text-white sm:text-5xl">Offense informs defense.</h2>
+          <p class="mt-5 leading-7 text-slate-400">From finding vulnerabilities to reverse engineering adversary tooling, our services are built around measurable security outcomes.</p>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <!-- Cards -->
+          <div class="service-card" data-aos="fade-up">
+            <div class="service-inner">
+              <article class="service-front glass flex flex-col justify-between">
+                <div>
+                  <span class="mono text-emerald-400">01</span>
+                  <div class="mt-7 text-4xl">◈</div>
+                  <h3 class="mt-5 mono text-2xl font-bold text-white">VAPT</h3>
+                  <p class="mt-3 text-sm leading-6 text-slate-400">Identify exploitable weaknesses before attackers do.</p>
+                </div>
+                <div class="mono text-xs text-slate-600">HOVER TO INSPECT →</div>
+              </article>
+              <article class="service-back border border-emerald-400/30 bg-[#071713] shadow-neon">
+                <span class="mono text-xs text-emerald-400">VAPT / OFFENSIVE SECURITY</span>
+                <h3 class="mt-4 mono text-xl font-bold text-white">Attack Surface Assessment</h3>
+                <ul class="mt-5 space-y-3 text-sm text-slate-300">
+                  <li>▸ Web & API penetration testing</li><li>▸ Network & infrastructure testing</li><li>▸ Auth / business logic testing</li><li>▸ Risk-based remediation guidance</li>
+                </ul>
+                <p class="mt-6 mono text-xs text-slate-500">Tools: Burp Suite • Nmap • Nuclei • Nessus • Metasploit</p>
+                <p class="mt-3 mono text-xs text-emerald-300">Deliverable: Executive + technical report</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="service-card" data-aos="fade-up" data-aos-delay="80">
+            <div class="service-inner">
+              <article class="service-front glass flex flex-col justify-between">
+                <div><span class="mono text-cyan-300">02</span><div class="mt-7 text-4xl">⌁</div><h3 class="mt-5 mono text-2xl font-bold text-white">Threat Hunting</h3><p class="mt-3 text-sm leading-6 text-slate-400">Hypothesis-driven hunts across endpoints, identity and network telemetry.</p></div>
+                <div class="mono text-xs text-slate-600">HOVER TO INSPECT →</div>
+              </article>
+              <article class="service-back border border-cyan-300/30 bg-[#06151a] shadow-cyan">
+                <span class="mono text-xs text-cyan-300">THREAT HUNTING / DFIR</span>
+                <h3 class="mt-4 mono text-xl font-bold text-white">Find the Unknown</h3>
+                <ul class="mt-5 space-y-3 text-sm text-slate-300"><li>▸ MITRE ATT&CK hypothesis hunts</li><li>▸ IOC / IOA investigations</li><li>▸ Detection engineering</li><li>▸ Incident triage & threat intel</li></ul>
+                <p class="mt-6 mono text-xs text-slate-500">Tools: Splunk • Securonix • Cortex XDR • Zeek • MISP</p>
+                <p class="mt-3 mono text-xs text-cyan-300">Deliverable: Hunt report + detections</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="service-card" data-aos="fade-up" data-aos-delay="120">
+            <div class="service-inner">
+              <article class="service-front glass flex flex-col justify-between">
+                <div><span class="mono text-purple-300">03</span><div class="mt-7 text-4xl">⌘</div><h3 class="mt-5 mono text-2xl font-bold text-white">Malware Analysis</h3><p class="mt-3 text-sm leading-6 text-slate-400">Reverse engineer malicious binaries and turn behavior into detections.</p></div>
+                <div class="mono text-xs text-slate-600">HOVER TO INSPECT →</div>
+              </article>
+              <article class="service-back border border-purple-300/30 bg-[#100b18]">
+                <span class="mono text-xs text-purple-300">MALWARE RESEARCH</span>
+                <h3 class="mt-4 mono text-xl font-bold text-white">Understand the Payload</h3>
+                <ul class="mt-5 space-y-3 text-sm text-slate-300"><li>▸ Static & dynamic analysis</li><li>▸ Reverse engineering</li><li>▸ YARA / Sigma engineering</li><li>▸ IOC & ATT&CK extraction</li></ul>
+                <p class="mt-6 mono text-xs text-slate-500">Tools: Ghidra • REMnux • YARA • CAPA • x64dbg</p>
+                <p class="mt-3 mono text-xs text-purple-300">Deliverable: Malware report + detections</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="service-card" data-aos="fade-up" data-aos-delay="180">
+            <div class="service-inner">
+              <article class="service-front glass flex flex-col justify-between">
+                <div><span class="mono text-yellow-300">04</span><div class="mt-7 text-4xl">▣</div><h3 class="mt-5 mono text-2xl font-bold text-white">Training</h3><p class="mt-3 text-sm leading-6 text-slate-400">Practical cybersecurity training built around real-world investigation workflows.</p></div>
+                <div class="mono text-xs text-slate-600">HOVER TO INSPECT →</div>
+              </article>
+              <article class="service-back border border-yellow-300/30 bg-[#171305]">
+                <span class="mono text-xs text-yellow-300">HANDS-ON TRAINING</span>
+                <h3 class="mt-4 mono text-xl font-bold text-white">Build Investigator Mindset</h3>
+                <ul class="mt-5 space-y-3 text-sm text-slate-300"><li>▸ Malware analysis labs</li><li>▸ TTP-based threat hunting</li><li>▸ SOC / IR investigation</li><li>▸ Detection engineering</li></ul>
+                <p class="mt-6 mono text-xs text-slate-500">Stack: Windows • Linux • SIEM • EDR • DFIR</p>
+                <p class="mt-3 mono text-xs text-yellow-300">Deliverable: Lab + exercises + certificate</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESEARCH -->
+    <section id="research" class="px-5 py-24 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-14" data-aos="fade-up">
+          <p class="mono text-xs uppercase tracking-[.25em] text-cyan-300">02 / Threat Research Lab</p>
+          <h2 class="mt-3 mono text-4xl font-bold text-white sm:text-5xl">The lab is always hunting.</h2>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="glass rounded-2xl p-6" data-aos="fade-right">
+            <div class="mb-5 flex items-center justify-between"><h3 class="mono font-bold text-white">Malware Families</h3><span class="mono text-xs text-slate-600">LAST 30D</span></div>
+            <div class="mx-auto max-w-sm"><canvas id="malwareChart"></canvas></div>
+            <div class="mt-5 grid grid-cols-2 gap-2 text-xs mono text-slate-400"><span>Ransomware 31%</span><span>Trojan 24%</span><span>Spyware 17%</span><span>Loader 15%</span><span>Other 13%</span></div>
+          </div>
+
+          <div class="glass rounded-2xl p-6" data-aos="fade-left">
+            <div class="mb-5 flex items-center justify-between"><h3 class="mono font-bold text-white">Threats Detected</h3><span class="mono text-xs text-emerald-400">7 DAY TREND</span></div>
+            <canvas id="threatChart" height="210"></canvas>
+            <div class="mt-5 flex justify-between mono text-xs text-slate-500"><span>Telemetry: SIEM + EDR</span><span>Detection pipeline: LIVE</span></div>
+          </div>
+
+          <div class="glass overflow-hidden rounded-2xl lg:col-span-2" data-aos="fade-up">
+            <div class="flex items-center justify-between border-b border-white/5 px-5 py-4">
+              <div><span class="mono text-xs text-emerald-400">SANDBOX NODE / WIN-X64-07</span><h3 class="mt-1 mono text-sm font-bold text-white">Dynamic Analysis Console</h3></div>
+              <span class="rounded-full border border-emerald-400/20 px-3 py-1 mono text-[10px] text-emerald-300">● RUNNING</span>
+            </div>
+            <div id="terminal" class="min-h-[290px] bg-black/60 p-5 mono text-xs leading-6 text-emerald-300"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLOGS -->
+    <section id="blogs" class="grid-bg border-y border-emerald-400/10 px-5 py-24 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10" data-aos="fade-up">
+          <p class="mono text-xs uppercase tracking-[.25em] text-emerald-400">03 / Intelligence</p>
+          <h2 class="mt-3 mono text-4xl font-bold text-white sm:text-5xl">Research & field notes.</h2>
+        </div>
+
+        <div class="mb-8 flex flex-wrap gap-2" id="filters">
+          <button class="filter-btn active rounded-lg border border-white/10 px-4 py-2 mono text-xs" data-filter="all">All</button>
+          <button class="filter-btn rounded-lg border border-white/10 px-4 py-2 mono text-xs" data-filter="Malware Analysis">Malware Analysis</button>
+          <button class="filter-btn rounded-lg border border-white/10 px-4 py-2 mono text-xs" data-filter="TTP">TTP</button>
+          <button class="filter-btn rounded-lg border border-white/10 px-4 py-2 mono text-xs" data-filter="DFIR">DFIR</button>
+          <button class="filter-btn rounded-lg border border-white/10 px-4 py-2 mono text-xs" data-filter="VAPT">VAPT</button>
+        </div>
+
+        <div id="blogGrid" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <article class="blog-card glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-emerald-400/30" data-category="Malware Analysis"><span class="mono text-[10px] text-purple-300">[MALWARE ANALYSIS]</span><h3 class="mt-5 text-lg font-bold text-white">Inside a Modern Loader: From Dropper to C2</h3><p class="mt-3 text-sm leading-6 text-slate-400">A practical walkthrough of static triage, execution flow and network indicators.</p><div class="mt-6 mono text-[10px] text-slate-600">30 SEP 2026 • 8 MIN READ</div></article>
+          <article class="blog-card glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-emerald-400/30" data-category="TTP"><span class="mono text-[10px] text-cyan-300">[TTP]</span><h3 class="mt-5 text-lg font-bold text-white">Hunting PowerShell Without Chasing Noise</h3><p class="mt-3 text-sm leading-6 text-slate-400">Building behavior-focused hypotheses around command and scripting activity.</p><div class="mt-6 mono text-[10px] text-slate-600">26 SEP 2026 • 6 MIN READ</div></article>
+          <article class="blog-card glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-emerald-400/30" data-category="DFIR"><span class="mono text-[10px] text-emerald-300">[DFIR]</span><h3 class="mt-5 text-lg font-bold text-white">A Field Guide to Suspicious Windows Persistence</h3><p class="mt-3 text-sm leading-6 text-slate-400">Registry, scheduled task and service artifacts investigators should correlate.</p><div class="mt-6 mono text-[10px] text-slate-600">20 SEP 2026 • 10 MIN READ</div></article>
+          <article class="blog-card glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-emerald-400/30" data-category="VAPT"><span class="mono text-[10px] text-yellow-300">[VAPT]</span><h3 class="mt-5 text-lg font-bold text-white">API Attack Surfaces: What Automated Scanners Miss</h3><p class="mt-3 text-sm leading-6 text-slate-400">Where business logic, authorization and workflow testing become critical.</p><div class="mt-6 mono text-[10px] text-slate-600">15 SEP 2026 • 7 MIN READ</div></article>
+          <article class="blog-card glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-emerald-400/30" data-category="Malware Analysis"><span class="mono text-[10px] text-purple-300">[MALWARE ANALYSIS]</span><h3 class="mt-5 text-lg font-bold text-white">YARA Rules That Survive the First Mutation</h3><p class="mt-3 text-sm leading-6 text-slate-400">Designing resilient behavioral and structural signatures for malware families.</p><div class="mt-6 mono text-[10px] text-slate-600">08 SEP 2026 • 9 MIN READ</div></article>
+          <article class="blog-card glass rounded-xl p-6 transition hover:-translate-y-1 hover:border-emerald-400/30" data-category="TTP"><span class="mono text-[10px] text-cyan-300">[TTP]</span><h3 class="mt-5 text-lg font-bold text-white">From IOC Hunting to Adversary Hypotheses</h3><p class="mt-3 text-sm leading-6 text-slate-400">Moving from known indicators toward repeatable behavior-based detection.</p><div class="mt-6 mono text-[10px] text-slate-600">01 SEP 2026 • 8 MIN READ</div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRAINING -->
+    <section id="training" class="px-5 py-24 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-12" data-aos="fade-up">
+          <p class="mono text-xs uppercase tracking-[.25em] text-yellow-300">04 / Training</p>
+          <h2 class="mt-3 mono text-4xl font-bold text-white sm:text-5xl">Learn by doing.</h2>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-3">
+          <article class="glass rounded-2xl p-6" data-aos="fade-up">
+            <span class="mono text-xs text-purple-300">COURSE 01</span><h3 class="mt-4 mono text-xl font-bold text-white">Practical Malware Analysis</h3>
+            <p class="mt-3 text-sm text-slate-400">Static triage, dynamic analysis, reverse engineering and detection creation.</p>
+            <p class="mt-5 mono text-xs text-slate-500">6 WEEKS • HANDS-ON LAB</p>
+            <div class="mt-6 space-y-2">
+              <div class="accordion rounded-lg border border-white/5" data-accordion><button class="flex w-full items-center justify-between p-3 text-left text-sm" type="button">Curriculum <span class="chevron transition">⌄</span></button><div class="accordion-content px-3"><p class="pb-4 text-xs leading-6 text-slate-400">PE triage → strings & imports → Ghidra → debugging → sandboxing → YARA → ATT&CK mapping → reporting.</p></div></div>
+            </div>
+            <a href="#contact" class="mt-6 block rounded-lg bg-emerald-400 px-4 py-3 text-center mono text-xs font-bold text-black">Enroll Now</a>
+          </article>
+
+          <article class="glass rounded-2xl p-6" data-aos="fade-up" data-aos-delay="100">
+            <span class="mono text-xs text-cyan-300">COURSE 02</span><h3 class="mt-4 mono text-xl font-bold text-white">TTP-Based Threat Hunting</h3>
+            <p class="mt-3 text-sm text-slate-400">Build hunt hypotheses from ATT&CK techniques and turn telemetry into detections.</p>
+            <p class="mt-5 mono text-xs text-slate-500">4 WEEKS • SOC LAB</p>
+            <div class="mt-6 space-y-2">
+              <div class="accordion rounded-lg border border-white/5" data-accordion><button class="flex w-full items-center justify-between p-3 text-left text-sm" type="button">Curriculum <span class="chevron transition">⌄</span></button><div class="accordion-content px-3"><p class="pb-4 text-xs leading-6 text-slate-400">Threat intel → hypotheses → ATT&CK → SIEM queries → endpoint telemetry → investigation → Sigma engineering.</p></div></div>
+            </div>
+            <a href="#contact" class="mt-6 block rounded-lg border border-cyan-300/30 bg-cyan-300/5 px-4 py-3 text-center mono text-xs font-bold text-cyan-300">Enroll Now</a>
+          </article>
+
+          <article class="glass rounded-2xl p-6" data-aos="fade-up" data-aos-delay="200">
+            <span class="mono text-xs text-emerald-300">COURSE 03</span><h3 class="mt-4 mono text-xl font-bold text-white">SOC & Incident Response</h3>
+            <p class="mt-3 text-sm text-slate-400">Practical alert triage, evidence collection, containment and post-incident detection.</p>
+            <p class="mt-5 mono text-xs text-slate-500">5 WEEKS • DFIR LAB</p>
+            <div class="mt-6 space-y-2">
+              <div class="accordion rounded-lg border border-white/5" data-accordion><button class="flex w-full items-center justify-between p-3 text-left text-sm" type="button">Curriculum <span class="chevron transition">⌄</span></button><div class="accordion-content px-3"><p class="pb-4 text-xs leading-6 text-slate-400">Alert triage → log analysis → endpoint investigation → containment → evidence → timeline → lessons learned.</p></div></div>
+            </div>
+            <a href="#contact" class="mt-6 block rounded-lg border border-emerald-400/30 bg-emerald-400/5 px-4 py-3 text-center mono text-xs font-bold text-emerald-300">Enroll Now</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="grid-bg border-t border-emerald-400/10 px-5 py-24 lg:px-8">
+      <div class="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2">
+        <div data-aos="fade-right">
+          <p class="mono text-xs uppercase tracking-[.25em] text-emerald-400">05 / Contact</p>
+          <h2 class="mt-3 mono text-4xl font-bold text-white sm:text-5xl">Let's secure what's next.</h2>
+          <p class="mt-5 max-w-xl leading-7 text-slate-400">Need a security assessment, threat-hunting engagement, malware analysis or a practical training program? Tell us what you're working on.</p>
+          <div class="mt-8 space-y-4">
+            <a href="mailto:hello@iysecurity.com" class="block rounded-xl border border-white/5 bg-white/[.02] p-4 transition hover:border-emerald-400/30"><span class="mono text-xs text-slate-600">EMAIL</span><div class="mt-1 text-emerald-300">hello@iysecurity.com</div></a>
+            <div class="block rounded-xl border border-white/5 bg-white/[.02] p-4"><span class="mono text-xs text-slate-600">FOCUS</span><div class="mt-1 text-slate-300">Malware • Threats • VAPT • Hunting • Training</div></div>
+          </div>
+        </div>
+
+        <form id="contactForm" class="glass rounded-2xl p-6 shadow-neon" data-aos="fade-left">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block"><span class="mono text-xs text-slate-500">NAME</span><input required name="name" class="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-emerald-400/50" placeholder="Your name"></label>
+            <label class="block"><span class="mono text-xs text-slate-500">EMAIL</span><input required type="email" name="email" class="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-emerald-400/50" placeholder="you@company.com"></label>
+          </div>
+          <label class="mt-4 block"><span class="mono text-xs text-slate-500">SERVICE</span><select name="service" class="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-emerald-400/50"><option>VAPT</option><option>Threat Hunting</option><option>Malware Analysis</option><option>Training</option><option>Other</option></select></label>
+          <label class="mt-4 block"><span class="mono text-xs text-slate-500">MESSAGE</span><textarea required name="message" rows="5" class="mt-2 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-emerald-400/50" placeholder="Tell us about your requirement..."></textarea></label>
+          <button class="mt-5 w-full rounded-lg bg-emerald-400 px-5 py-3.5 mono text-sm font-bold text-black transition hover:scale-[1.01]">Transmit Request →</button>
+          <p id="formStatus" class="mt-3 hidden text-center mono text-xs text-emerald-300">Request prepared. Connect this form to your email/backend to receive submissions.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/5 bg-black/40 px-5 py-8 lg:px-8">
+    <div class="mx-auto flex max-w-7xl flex-col justify-between gap-5 sm:flex-row sm:items-center">
+      <div><div class="mono font-bold text-white">IY<span class="text-emerald-400">SECURITY</span></div><p class="mt-1 text-xs text-slate-600">We Hunt What Hides.</p></div>
+      <div class="flex gap-4 mono text-xs text-slate-500"><a href="#" class="hover:text-emerald-300">LinkedIn</a><a href="#" class="hover:text-emerald-300">GitHub</a><a href="#" class="hover:text-emerald-300">X</a></div>
+      <div class="mono text-[10px] text-slate-600">© 2026 IY SECURITY. ALL RIGHTS RESERVED.</div>
+    </div>
+  </footer>
+
+  <!-- AOS -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+  <script>
+    // Initialize scroll animations
+    AOS.init({ duration: 700, once: true, offset: 80 });
+
+    // Mobile navigation
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    document.querySelectorAll('#mobileMenu a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+    // Matrix / terminal background
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    let fontSize = 13, columns, drops;
+    const chars = '01アイウエオカキクケコサシスセソABCDEFGHIJKLMNOPQRSTUVWXYZ<>/{}[]$#@';
+
+    function resizeMatrix() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array(columns).fill(1);
+    }
+    resizeMatrix();
+    addEventListener('resize', resizeMatrix);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(2,6,7,.09)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#39ff88';
+      ctx.font = fontSize + 'px monospace';
+      for (let i=0;i<drops.length;i++) {
+        const char = chars[Math.floor(Math.random()*chars.length)];
+        ctx.fillText(char, i*fontSize, drops[i]*fontSize);
+        if (drops[i]*fontSize > canvas.height && Math.random() > .975) drops[i]=0;
+        drops[i]++;
+      }
+      requestAnimationFrame(drawMatrix);
+    }
+    drawMatrix();
+
+    // Animated counters
+    const counters = document.querySelectorAll('.counter');
+    const counterObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting || entry.target.dataset.done) return;
+        entry.target.dataset.done = '1';
+        const el = entry.target, target = Number(el.dataset.target);
+        const start = performance.now(), duration = 1600;
+        function tick(now) {
+          const progress = Math.min((now-start)/duration,1);
+          const eased = 1-Math.pow(1-progress,3);
+          el.textContent = Math.floor(target*eased).toLocaleString();
+          if(progress<1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }, {threshold:.35});
+    counters.forEach(c => counterObserver.observe(c));
+
+    // Chart.js
+    Chart.defaults.color = '#789095';
+    Chart.defaults.font.family = '"JetBrains Mono", monospace';
+
+    new Chart(document.getElementById('malwareChart'), {
+      type:'doughnut',
+      data:{
+        labels:['Ransomware','Trojan','Spyware','Loader','Other'],
+        datasets:[{data:[31,24,17,15,13], borderWidth:2, borderColor:'#071012', backgroundColor:['#39ff88','#22d3ee','#a78bfa','#facc15','#475569']}]
+      },
+      options:{responsive:true, cutout:'70%', plugins:{legend:{display:false}}}
+    });
+
+    new Chart(document.getElementById('threatChart'), {
+      type:'line',
+      data:{
+        labels:['D-6','D-5','D-4','D-3','D-2','D-1','TODAY'],
+        datasets:[{
+          label:'Threats',
+          data:[218,267,243,318,291,376,421],
+          borderColor:'#39ff88',
+          backgroundColor:'rgba(57,255,136,.08)',
+          tension:.4, fill:true, pointRadius:3, pointBackgroundColor:'#39ff88'
+        }]
+      },
+      options:{responsive:true, scales:{x:{grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true}},plugins:{legend:{display:false}}}
+    });
+
+    // Sandbox terminal typing simulation
+    const terminal = document.getElementById('terminal');
+    const terminalLines = [
+      '[00:02:11] $ submit sample SHA256=9f2d...e81a',
+      '[00:02:12] [+] Creating isolated Windows analysis environment',
+      '[00:02:14] [+] Static triage complete — PE32+ / unsigned',
+      '[00:02:16] [!] Suspicious API: VirtualAlloc → WriteProcessMemory',
+      '[00:02:18] [!] Process injection behavior observed',
+      '[00:02:20] [+] Network callback: hxxp://example.invalid/api/check',
+      '[00:02:22] [+] Extracted 14 IOCs / 6 behavioral indicators',
+      '[00:02:23] [+] ATT&CK: T1055 / T1105 / T1027',
+      '[00:02:24] [✓] YARA match: IY_LOADER_FAMILY',
+      '[00:02:25] [✓] Sandbox report generated',
+      '[00:02:26] STATUS: ANALYSIS COMPLETE'
+    ];
+    let lineIndex=0;
+    function typeLine() {
+      if(lineIndex >= terminalLines.length) {
+        setTimeout(() => { terminal.innerHTML=''; lineIndex=0; typeLine(); }, 4500);
+        return;
+      }
+      const line = document.createElement('div');
+      line.textContent = terminalLines[lineIndex++];
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+      setTimeout(typeLine, 250 + Math.random()*350);
+    }
+    typeLine();
+
+    // Blog category filter
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.blog-card').forEach(card => {
+          card.style.display = filter === 'all' || card.dataset.category === filter ? '' : 'none';
+        });
+      });
+    });
+
+    // Accordions
+    document.querySelectorAll('[data-accordion] button').forEach(button => {
+      button.addEventListener('click', () => button.parentElement.classList.toggle('open'));
+    });
+
+    // Contact form demo
+    document.getElementById('contactForm').addEventListener('submit', e => {
+      e.preventDefault();
+      document.getElementById('formStatus').classList.remove('hidden');
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
