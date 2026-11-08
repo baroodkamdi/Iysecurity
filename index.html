@@ -149,15 +149,15 @@
     </div>
 
     <!-- Website launch countdown banner -->
-    <div id="launchBanner" class="border-t border-cyan-300/15 bg-gradient-to-r from-[#071713] via-[#07151a] to-[#071713] px-4 py-3">
-      <div class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-2 text-center sm:flex-row sm:gap-5">
-        <span class="inline-flex items-center gap-2 mono text-[11px] font-semibold tracking-[.18em] text-emerald-300"><span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>IYSECURITY WEBSITE LAUNCH</span>
-        <span id="launchMessage" class="text-xs text-slate-300">Going live on 10 November 2026</span>
-        <div id="launchCountdown" class="flex items-center gap-2 mono text-xs text-white" aria-live="polite">
-          <span class="rounded-md border border-emerald-400/20 bg-black/30 px-2 py-1"><b id="launchDays" class="text-emerald-300">--</b><small class="ml-1 text-slate-500">D</small></span>
-          <span class="rounded-md border border-emerald-400/20 bg-black/30 px-2 py-1"><b id="launchHours" class="text-cyan-300">--</b><small class="ml-1 text-slate-500">H</small></span>
-          <span class="rounded-md border border-emerald-400/20 bg-black/30 px-2 py-1"><b id="launchMinutes" class="text-emerald-300">--</b><small class="ml-1 text-slate-500">M</small></span>
-          <span class="rounded-md border border-emerald-400/20 bg-black/30 px-2 py-1"><b id="launchSeconds" class="text-cyan-300">--</b><small class="ml-1 text-slate-500">S</small></span>
+    <div id="launchBanner" class="border-t border-cyan-300/15 bg-gradient-to-r from-[#071713] via-[#07151a] to-[#071713] px-4 py-5 sm:py-6">
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 text-center sm:flex-row sm:gap-7">
+        <span class="inline-flex items-center gap-2 mono text-sm sm:text-base font-bold tracking-[.2em] text-emerald-300"><span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>IYSECURITY WEBSITE LAUNCH</span>
+        <span id="launchMessage" class="text-sm sm:text-base font-medium text-slate-200">Going live on 10 November 2026</span>
+        <div id="launchCountdown" class="flex items-center gap-2 sm:gap-3 mono text-sm sm:text-base text-white" aria-live="polite">
+          <span class="rounded-lg border border-emerald-400/25 bg-black/40 px-3 py-2 sm:px-4 sm:py-3 text-lg sm:text-2xl shadow-neon"><b id="launchDays" class="text-emerald-300">--</b><small class="ml-1 text-xs sm:text-sm text-slate-500">D</small></span>
+          <span class="rounded-lg border border-emerald-400/25 bg-black/40 px-3 py-2 sm:px-4 sm:py-3 text-lg sm:text-2xl shadow-neon"><b id="launchHours" class="text-cyan-300">--</b><small class="ml-1 text-xs sm:text-sm text-slate-500">H</small></span>
+          <span class="rounded-lg border border-emerald-400/25 bg-black/40 px-3 py-2 sm:px-4 sm:py-3 text-lg sm:text-2xl shadow-neon"><b id="launchMinutes" class="text-emerald-300">--</b><small class="ml-1 text-xs sm:text-sm text-slate-500">M</small></span>
+          <span class="rounded-lg border border-emerald-400/25 bg-black/40 px-3 py-2 sm:px-4 sm:py-3 text-lg sm:text-2xl shadow-neon"><b id="launchSeconds" class="text-cyan-300">--</b><small class="ml-1 text-xs sm:text-sm text-slate-500">S</small></span>
         </div>
       </div>
     </div>
@@ -479,7 +479,7 @@ STATUS: <span class="text-cyan-300">INVESTIGATION ACTIVE</span>
       const remaining = launchTarget - Date.now();
       if (remaining <= 0) {
         launchMessage.textContent = "We're live — welcome to IY SECURITY.";
-        launchCountdown.innerHTML = '<span class="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 font-bold tracking-widest text-emerald-300">● NOW LIVE</span>';
+        launchCountdown.innerHTML = '<span class="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-5 py-3 text-lg sm:text-xl font-bold tracking-widest text-emerald-300 shadow-neon">● NOW LIVE</span>';
         return;
       }
       document.getElementById('launchDays').textContent = String(Math.floor(remaining / 86400000)).padStart(2, '0');
